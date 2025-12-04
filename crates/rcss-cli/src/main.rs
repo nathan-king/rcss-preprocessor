@@ -1,20 +1,20 @@
-use rss_core::Theme;
-use rss_core::parser;
-use rss_core::resolver;
+use rcss_core::{emitter, parser, resolver, theme::Theme};
 
 fn main() {
-    let theme = Theme::load("theme/tokens.json").expect("failed to load theme");
+    // Load theme
+    let theme = Theme::load("theme/tokens.json").expect("Failed to load theme");
 
-    let input = r#"
-    .button {
-        padding: @4;
-        color: @blue-500;
-    }
-    "#;
+    // Load embedded demo stylesheet
+    let src = include_str!("demo.rcss");
 
-    let ast = parser::parse(input).expect("parse failed");
+    // Parse
+    let stylesheet = parser::parse(src).expect("Failed to parse RCSS");
 
-    let resolved = resolver::resolve(ast, &theme).expect("resolve failed");
+    // Resolve
+    let stylesheet = resolver::resolve(stylesheet, &theme).expect("Failed to resolve tokens");
 
-    println!("{:#?}", resolved);
+    // Emit CSS
+    let css = emitter::emit_css(&stylesheet);
+
+    println!("{}", css);
 }

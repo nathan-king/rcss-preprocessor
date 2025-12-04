@@ -33,14 +33,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "rss-cli"
+name = "rcss-cli"
 version = "0.1.0"
 dependencies = [
- "rss-core",
+ "rcss-core",
 ]
 
 [[package]]
-name = "rss-core"
+name = "rcss-core"
 version = "0.1.0"
 dependencies = [
  "serde",
