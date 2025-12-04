@@ -1,126 +1,103 @@
 # RCSS — Rusty Style Sheets
 
-RCSS is a strict, token-driven CSS preprocessor written in Rust.
-It provides Tailwind-compatible design tokens, a clean nested rule syntax,
-and compile-time guarantees that ensure consistent, predictable styling.
+RCSS is an experimental CSS preprocessor written in Rust.  
+It's very early in development, and the goal right now is simple:  
+parse a stylesheet, resolve Tailwind‑style design tokens, and output clean CSS.
 
-RCSS compiles `.rcss` files into plain, valid CSS with no runtime overhead.
+This project is not stable, not feature‑complete, and not ready for production.  
+But it works, and it will grow.
+
+---
+
+## What RCSS does today
+
+- Loads a JSON theme containing spacing, colors, and font sizes  
+- Parses a small subset of CSS‑like syntax  
+- Replaces token values (e.g., `@4`, `@blue-500`) with real CSS values  
+- Prints a resolved stylesheet to stdout (temporary behaviour)
+
+Example input:
 
 ```css
 .button {
     padding: @4;
     color: @blue-500;
-
-    &:hover {
-        color: @blue-700;
-    }
 }
 ```
 
-Compiles to:
+Example output:
 
 ```css
 .button {
     padding: 1rem;
     color: #3b82f6;
 }
-.button:hover {
-    color: #1d4ed8;
-}
 ```
+
+This is just the beginning.
 
 ---
 
-## Features
-
-### Token-first syntax
-RCSS enforces a strict design system:
-
-- spacing tokens like `@4`, `@6`
-- color tokens like `@blue-500`
-- future support for typography, radii, shadows, transitions, etc.
-
-Tokens come from a JSON theme file (Tailwind-compatible).
-
-### Nested rules
-Write CSS in a structured and readable way:
-
-```rcss
-.card {
-    padding: @6;
-
-    .title {
-        font-size: @md;
-    }
-
-    &:hover {
-        background-color: @gray-100;
-    }
-}
-```
-
-### Designed for design systems
-RCSS is intended for teams who want:
-
-- strict mode (tokens required for design-system-controlled properties)
-- predictable output
-- no arbitrary values unless explicitly allowed
-
-### Rust-powered speed
-The parser, resolver, and emitter are implemented in Rust.
-No Node.js is required to compile stylesheets.
-
-### Portable and framework-agnostic
-RCSS works with any front-end or back-end framework, including:
-
-- Next.js
-- React
-- Svelte
-- Astro
-- Leptos, Yew, and other Rust frameworks
-- Traditional HTML/CSS projects
-
----
-
-## Project Structure
+## Project layout
 
 ```
 crates/
-  rcss-core/   # parser, AST, token resolver, emitter
-  rcss-cli/    # command-line interface for running the compiler
+  rcss-core/   # parser, AST, resolver
+  rcss-cli/    # command-line interface
 theme/
-  tokens.json  # design tokens (spacing, colors, sizes, etc.)
+  tokens.json  # Tailwind-style design tokens
 ```
 
 ---
 
-## Usage
+## Goals (short-term)
 
-RCSS is not yet published on crates.io. Expect this to change as the project stabilises.
+These are the next concrete aims:
 
-### Run the CLI:
+1. Clean compiler pipeline  
+2. Emit valid CSS to a user-specified output file  
+3. Add nested selectors  
+4. Add responsive blocks (`@sm`, `@md`, etc.)  
+5. Add user-defined variables (`$something`)  
+6. Add strict vs allow modes
+
+---
+
+## Goals (long-term)
+
+- Plugin system  
+- VS Code extension  
+- Stable grammar  
+- Full Tailwind-compatible token support  
+- Zero-runtime integration for frameworks (Next.js, Astro, Leptos, etc.)
+
+---
+
+## Running the project
+
+Right now everything is local. Run the CLI with:
 
 ```sh
 cargo run -p rcss-cli
 ```
 
-By default, the CLI loads:
+The CLI currently loads:
 
 - `theme/tokens.json`
-- a sample `.rcss` source defined in the CLI (temporary during development)
+- a small hardcoded `.rcss` sample for demo purposes
 
-In a future release:
+Future versions will support:
 
-```sh
+```
 rcss build styles.rcss -o styles.css
 ```
 
 ---
 
-## Theme File
+## Theme file format
 
-The theme file is a Tailwind-compatible JSON snapshot.
-Example (`theme/tokens.json`):
+RCSS expects a simple JSON theme.  
+Example:
 
 ```json
 {
@@ -135,83 +112,27 @@ Example (`theme/tokens.json`):
 }
 ```
 
----
-
-## Philosophy
-
-RCSS exists because:
-
-- SCSS allows arbitrary styling without design-system enforcement
-- Tailwind enforces design systems but is class-based
-- CSS custom properties alone do not enforce token usage
-- Design systems benefit from a dedicated, predictable authoring syntax
-- Rust enables fast, safe, and reliable compilation
-
-RCSS is not intended to replace Tailwind.
-It is a design-system-first authoring language that compiles to clean CSS.
+This format will likely expand over time.
 
 ---
 
-## Roadmap
+## Philosophy (early draft)
 
-### v0.1 — Core prototype (current)
-- Parser
-- Design token resolver
-- AST representation
-- Basic CLI
-- Theme ingestion
+The idea behind RCSS:
 
-### v0.2
-- CSS emitter (real file output)
-- CLI flags
-- File watching
+- enforce a design system by default  
+- provide a nicer authoring syntax than Tailwind classes  
+- stay strict and predictable, not permissive  
+- avoid runtime CSS generation  
+- use Rust for fast, deterministic builds  
 
-### v0.3
-- Nested selectors
-- Responsive blocks (`@md`, `@sm`, `@lg`)
-- User-level variables (`$var`)
-
-### v0.4
-- Strict mode (tokens required for design-system properties)
-- Allow mode for migration (accepts raw CSS values)
-
-### v0.5
-- VS Code syntax highlighting
-- `.rcss` language extension
-
-### v1.0
-- Stable grammar
-- Full documentation
-- Plugin system
-
----
-
-## License
-
-MIT License. See `LICENSE` for details.
-
----
-
-## Contributing
-
-RCSS is in early development and open to contributions.
-Detailed contribution guidelines will be added soon.
-
----
-
-## Acknowledgements
-
-RCSS is influenced by:
-
-- Tailwind CSS design tokens
-- SCSS syntax
-- Lightning CSS
-- The Rust ecosystem
+RCSS is not a Tailwind replacement — it is a structured authoring layer built *on top* of a Tailwind‑style design system.
 
 ---
 
 ## Status
 
-RCSS is experimental but functional.
-The parser and design token resolver are implemented.
-Repository: https://github.com/nathan-king/rcss-preprocessor
+RCSS is experimental, minimal, and actively being built.
+
+Repo: https://github.com/nathan-king/rcss-preprocessor
+
