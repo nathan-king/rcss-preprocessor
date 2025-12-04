@@ -112,7 +112,7 @@ Example:
 }
 ```
 
-This format will likely expand over time.
+This format will expand over time.
 
 ---
 
@@ -121,7 +121,8 @@ This format will likely expand over time.
 The idea behind RCSS:
 
 - enforce a design system by default  
-- provide a nicer authoring syntax than Tailwind classes  
+- provide a nicer authoring syntax than Tailwind classes
+- avoid classes hell
 - stay strict and predictable, not permissive  
 - avoid runtime CSS generation  
 - use Rust for fast, deterministic builds  
