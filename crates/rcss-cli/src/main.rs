@@ -1,20 +1,48 @@
+mod cli;
+
+use clap::Parser;
+use cli::{Cli, Commands};
+
+use std::fs;
+
 use rcss_core::{emitter, parser, resolver, theme::Theme};
 
 fn main() {
-    // Load theme
+    let args = Cli::parse();
+
+    match args.command {
+        Commands::Build { input, output } => {
+            run_build(&input, output);
+        }
+    }
+}
+
+fn run_build(input_path: &str, output_override: Option<String>) {
+    // Determine output path
+    let output_path = match output_override {
+        Some(custom) => custom,
+        None => auto_output_name(input_path),
+    };
+
     let theme = Theme::load("theme/tokens.json").expect("Failed to load theme");
 
-    // Load embedded demo stylesheet
-    let src = include_str!("demo.rcss");
+    let src = fs::read_to_string(input_path).expect("Failed to read input RCSS file");
 
-    // Parse
-    let stylesheet = parser::parse(src).expect("Failed to parse RCSS");
+    let stylesheet = parser::parse(&src).expect("Failed to parse RCSS");
 
-    // Resolve
     let stylesheet = resolver::resolve(stylesheet, &theme).expect("Failed to resolve tokens");
 
-    // Emit CSS
     let css = emitter::emit_css(&stylesheet);
 
-    println!("{}", css);
+    fs::write(&output_path, css).expect("Failed to write CSS output");
+
+    println!("✓ Built {} → {}", input_path, output_path);
+}
+
+fn auto_output_name(input: &str) -> String {
+    if let Some(stripped) = input.strip_suffix(".rcss") {
+        format!("{}.css", stripped)
+    } else {
+        format!("{}.css", input)
+    }
 }

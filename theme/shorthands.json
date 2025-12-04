@@ -1,0 +1,7 @@
+{
+  "font": {
+    "font-weight": "font_weight",
+    "font-style": "font_style",
+    "line-height": "line_height"
+  }
+}

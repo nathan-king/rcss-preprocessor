@@ -22,6 +22,10 @@ fn resolve_token(property: &str, token: &str, theme: &Theme) -> Result<String, S
         return resolve_color(token, theme);
     }
 
+    if is_font_size_property(property) {
+        return resolve_font_size(token, theme);
+    }
+
     Err(format!("Don't know how to resolve token: {}", token))
 }
 
@@ -62,4 +66,16 @@ fn resolve_color(token: &str, theme: &Theme) -> Result<String, String> {
         .ok_or_else(|| format!("Unknown color shade '{}-{}'", family, shade))?;
 
     Ok(value.clone())
+}
+
+fn is_font_size_property(property: &str) -> bool {
+    property == "font-size"
+}
+
+fn resolve_font_size(token: &str, theme: &Theme) -> Result<String, String> {
+    if let Some(entry) = theme.font_size.get(token) {
+        Ok(entry.size.clone())
+    } else {
+        Err(format!("Unknown font size token: {}", token))
+    }
 }
