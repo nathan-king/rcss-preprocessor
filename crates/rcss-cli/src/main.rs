@@ -24,8 +24,7 @@ fn run_build(input_path: &str, output_override: Option<String>) {
         None => auto_output_name(input_path),
     };
 
-    let theme = Theme::load("theme/tokens/tokens.json").expect("Failed to load theme");
-
+    let theme = Theme::load_from_dir("theme").expect("Failed to load theme");
     let src = fs::read_to_string(input_path).expect("Failed to read input RCSS file");
 
     let stylesheet = parser::parse(&src).expect("Failed to parse RCSS");

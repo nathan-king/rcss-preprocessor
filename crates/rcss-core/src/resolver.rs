@@ -108,7 +108,7 @@ fn resolve_color_with_opacity(
 fn inject_alpha(color: String, opacity: &str) -> Result<String, String> {
     if color.starts_with("oklch(") {
         let base = color.trim_end_matches(')');
-        return Ok(format!("{} / {}", base, opacity));
+        return Ok(format!("{} / {})", base, opacity));
     }
 
     if color.starts_with('#') {
@@ -117,7 +117,7 @@ fn inject_alpha(color: String, opacity: &str) -> Result<String, String> {
 
     if color.contains('(') {
         let base = color.trim_end_matches(')');
-        return Ok(format!("{} / {}", base, opacity));
+        return Ok(format!("{} / {})", base, opacity));
     }
 
     Err(format!("Unsupported color format: {}", color))

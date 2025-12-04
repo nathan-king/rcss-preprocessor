@@ -1,6 +1,7 @@
 .button {
     padding: 1.5rem;
-    color: rgba(55,65,81,0.20);
+    color: oklch(62.7% 0.265 303.9 / 0.80);
     font-size: 1rem;
+    background-color: oklch(47% 0.157 37.304 / 0.70);
 }
 

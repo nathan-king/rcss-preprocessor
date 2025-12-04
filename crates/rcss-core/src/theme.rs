@@ -19,23 +19,17 @@ pub struct FontSizeEntry {
 }
 
 impl Theme {
-    /// Load a fully merged theme from multiple JSON files inside a directory.
-    ///
-    /// Expected structure:
-    /// theme/
-    ///   spacing.json
-    ///   colors.json
-    ///   font.json
-    ///   opacity.json
     pub fn load_from_dir(dir: &str) -> Result<Self, String> {
-        let spacing: HashMap<String, String> = load_json(&format!("{}/spacing.json", dir))?;
+        let base = format!("{}/tokens", dir);
+        let spacing: HashMap<String, String> = load_json(&format!("{}/spacing.json", base))?;
 
         let colors: HashMap<String, HashMap<String, String>> =
-            load_json(&format!("{}/colors.json", dir))?;
+            load_json(&format!("{}/colors.json", base))?;
 
-        let font_size: HashMap<String, FontSizeEntry> = load_json(&format!("{}/font.json", dir))?;
+        let font_size: HashMap<String, FontSizeEntry> =
+            load_json(&format!("{}/font-size.json", base))?;
 
-        let opacity: HashMap<String, String> = load_json(&format!("{}/opacity.json", dir))?;
+        let opacity: HashMap<String, String> = load_json(&format!("{}/opacity.json", base))?;
 
         Ok(Self {
             spacing,
