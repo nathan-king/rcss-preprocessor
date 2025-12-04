@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "crates/rcss-core",
+    "crates/rcss-cli",
+]
