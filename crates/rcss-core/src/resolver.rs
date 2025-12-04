@@ -18,12 +18,20 @@ fn resolve_token(property: &str, token: &str, theme: &Theme) -> Result<String, S
         return resolve_spacing(token, theme);
     }
 
+    if let Some((color_token, opacity_token)) = token.split_once('/') {
+        return resolve_color_with_opacity(property, color_token, opacity_token, theme);
+    }
+
     if is_color_property(property) {
         return resolve_color(token, theme);
     }
 
     if is_font_size_property(property) {
         return resolve_font_size(token, theme);
+    }
+
+    if property == "opacity" {
+        return resolve_global_opacity(token, theme);
     }
 
     Err(format!("Don't know how to resolve token: {}", token))
@@ -78,4 +86,75 @@ fn resolve_font_size(token: &str, theme: &Theme) -> Result<String, String> {
     } else {
         Err(format!("Unknown font size token: {}", token))
     }
+}
+
+fn resolve_color_with_opacity(
+    _property: &str, //to support opacity behaviour based on property
+    color_token: &str,
+    opacity_token: &str,
+    theme: &Theme,
+) -> Result<String, String> {
+    let color = resolve_color(color_token, theme)?;
+
+    let opacity_key = opacity_token.trim_start_matches('@');
+    let opacity = theme
+        .opacity
+        .get(opacity_key)
+        .ok_or_else(|| format!("Unknown opacity token '@{}'", opacity_key))?;
+
+    inject_alpha(color, opacity)
+}
+
+fn inject_alpha(color: String, opacity: &str) -> Result<String, String> {
+    if color.starts_with("oklch(") {
+        let base = color.trim_end_matches(')');
+        return Ok(format!("{} / {}", base, opacity));
+    }
+
+    if color.starts_with('#') {
+        return hex_to_rgba(&color, opacity);
+    }
+
+    if color.contains('(') {
+        let base = color.trim_end_matches(')');
+        return Ok(format!("{} / {}", base, opacity));
+    }
+
+    Err(format!("Unsupported color format: {}", color))
+}
+
+fn hex_to_rgba(hex: &str, opacity: &str) -> Result<String, String> {
+    let hex = hex.trim_start_matches('#');
+
+    let (r, g, b) = match hex.len() {
+        6 => {
+            let r = u8::from_str_radix(&hex[0..2], 16).unwrap();
+            let g = u8::from_str_radix(&hex[2..4], 16).unwrap();
+            let b = u8::from_str_radix(&hex[4..6], 16).unwrap();
+            (r, g, b)
+        }
+        3 => {
+            let r = u8::from_str_radix(&hex[0..1].repeat(2), 16).unwrap();
+            let g = u8::from_str_radix(&hex[1..2].repeat(2), 16).unwrap();
+            let b = u8::from_str_radix(&hex[2..3].repeat(2), 16).unwrap();
+            (r, g, b)
+        }
+        _ => return Err(format!("Invalid hex color: {}", hex)),
+    };
+
+    Ok(format!("rgba({},{},{},{})", r, g, b, opacity))
+}
+
+fn resolve_global_opacity(token: &str, theme: &Theme) -> Result<String, String> {
+    if token.parse::<f32>().is_ok() {
+        return Ok(token.to_string());
+    }
+
+    let key = token.trim_start_matches('@');
+
+    theme
+        .opacity
+        .get(key)
+        .cloned() // <— required to convert &String → String
+        .ok_or_else(|| format!("Unknown opacity token: {}", key))
 }

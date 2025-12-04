@@ -1,7 +1,15 @@
 {
   "font": {
+    "font-size": "font_size",
     "font-weight": "font_weight",
     "font-style": "font_style",
-    "line-height": "line_height"
+    "line-height": "line_height",
+    "letter-spacing": "letter_spacing"
+  },
+  "border": {
+    "color": "border_color",
+    "width": "border_width",
+    "style": "border_style",
+    "radius": "border_radius"
   }
 }

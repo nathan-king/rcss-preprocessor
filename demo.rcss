@@ -1,5 +1,5 @@
 .button {
     padding: @6;
-    color: @gray-700;
+    color: @gray-700/20;
     font-size: @md;
 }
