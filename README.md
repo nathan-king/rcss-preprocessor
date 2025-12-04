@@ -1,4 +1,4 @@
-# RCSS — Rusty Style Sheets
+# RCSS — Rusty Cascading Style Sheets
 
 RCSS is an experimental CSS preprocessor written in Rust.  
 It's very early in development, and the goal right now is simple:  
