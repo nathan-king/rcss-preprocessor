@@ -1,0 +1,120 @@
+{
+  "name": "RCSS",
+  "scopeName": "source.rcss",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#preset" },
+    { "include": "#variables" },
+    { "include": "#tokens" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#properties" },
+    { "include": "#selectors" },
+    { "include": "#keywords" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.double-slash.css.rcss", "match": "//.*$" },
+        {
+          "name": "comment.block.css.rcss",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "preset": {
+      "patterns": [
+        {
+          "name": "entity.other.attribute-name.placeholder.css.rcss",
+          "match": "%[A-Za-z0-9_-]+"
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "name": "variable.other.readwrite.rcss",
+          "match": "(\\$)([A-Za-z_][\\w-]*)",
+          "captures": {
+            "1": { "name": "punctuation.definition.variable.rcss" },
+            "2": { "name": "variable.other.readwrite.rcss" }
+          }
+        }
+      ]
+    },
+    "tokens": {
+      "patterns": [
+        {
+          "name": "constant.other.rcss",
+          "begin": "(@)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.constant.rcss" }
+          },
+          "end": "(?=\\s|[;,)}\\]]|$)",
+          "contentName": "constant.other.rcss",
+          "patterns": [
+            {
+              "name": "punctuation.separator.constant.rcss",
+              "match": "[-/]"
+            }
+          ]
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        { "name": "string.quoted.double.css.rcss", "match": "\"([^\"\\\\]|\\\\.)*\"" },
+        { "name": "string.quoted.single.css.rcss", "match": "'([^'\\\\]|\\\\.)*'" }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.css.rcss",
+          "match": "\\b\\d+(?:\\.\\d+)?(?:rem|px|deg|s|ms|%)?\\b"
+        }
+      ]
+    },
+    "properties": {
+      "patterns": [
+        {
+          "name": "support.type.property-name.css.rcss",
+          "match": "^[\\t ]*[A-Za-z-]+(?=\\s*:)"
+        }
+      ]
+    },
+    "selectors": {
+      "patterns": [
+        {
+          "name": "entity.other.attribute-name.id.css.rcss",
+          "match": "^[\\t ]*(#)([A-Za-z0-9_-]+)(?=\\s*\\{)",
+          "captures": {
+            "1": { "name": "punctuation.definition.entity.css.rcss" },
+            "2": { "name": "entity.other.attribute-name.id.css.rcss" }
+          }
+        },
+        {
+          "name": "entity.other.attribute-name.class.css.rcss",
+          "match": "^[\\t ]*(\\.)([A-Za-z0-9_-]+)(?=\\s*\\{)",
+          "captures": {
+            "1": { "name": "punctuation.definition.entity.css.rcss" },
+            "2": { "name": "entity.other.attribute-name.class.css.rcss" }
+          }
+        },
+        {
+          "name": "entity.name.tag.css.rcss",
+          "match": "^[\\t ]*[A-Za-z0-9_-]+(?=\\s*\\{)"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.at-rule.css.rcss",
+          "match": "\\b(apply|screen|dark|light)\\b"
+        }
+      ]
+    }
+  }
+}

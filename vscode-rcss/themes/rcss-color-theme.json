@@ -1,0 +1,32 @@
+{
+  "$schema": "vscode://schemas/color-theme",
+  "name": "RCSS Accent",
+  "type": "dark",
+  "colors": {},
+  "tokenColors": [
+    {
+      "scope": "support.type.property-name.css.rcss",
+      "settings": { "fontStyle": "" }
+    },
+    {
+      "scope": "variable.other.readwrite.rcss",
+      "settings": { "foreground": "#e5c07b" }
+    },
+    {
+      "scope": "punctuation.definition.variable.rcss",
+      "settings": { "foreground": "#b3933a" }
+    },
+    {
+      "scope": "constant.other.rcss",
+      "settings": { "foreground": "#61afef" }
+    },
+    {
+      "scope": "punctuation.separator.constant.rcss",
+      "settings": { "foreground": "#8ec7ff" }
+    },
+    {
+      "scope": "punctuation.definition.constant.rcss",
+      "settings": { "foreground": "#3b697814" }
+    }
+  ]
+}
