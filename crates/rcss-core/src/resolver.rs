@@ -1886,4 +1886,38 @@ mod tests {
         let err = resolve(stylesheet, &theme).expect_err("expected variable error");
         assert!(err.contains("unknown variable '$missing'"));
     }
+
+    #[test]
+    fn nested_selectors_multi_level() {
+        let css = render_css(
+            ".button { \
+                color: @blue-500; \
+                &:hover { color: @blue-700; } \
+                & .child { padding: @4; } \
+                &-primary { background: @green-500; } \
+                .icon { width: @4; height: @4; &:hover { opacity: 0.6; } } \
+            }",
+        );
+        assert!(css.contains(".button:hover {"));
+        assert!(css.contains(".button .child {"));
+        assert!(css.contains(".button-primary {"));
+        assert!(css.contains(".button .icon {"));
+        assert!(css.contains(".button .icon:hover {"));
+    }
+
+    #[test]
+    fn nested_selector_lists() {
+        let css = render_css(".a, .b { &:hover, &.active { color: @red-500; } }");
+        assert!(css.contains(".a:hover {"));
+        assert!(css.contains(".b.active {"));
+    }
+
+    #[test]
+    fn selectors_inside_property_block() {
+        let css = render_css(
+            ".card { border { & .inner { border-color: @blue-500; } &:hover { border-width: @2; } } }",
+        );
+        assert!(css.contains(".card .inner {"));
+        assert!(css.contains(".card:hover {"));
+    }
 }

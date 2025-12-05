@@ -260,3 +260,92 @@
 
 }
 
+/* --- Nested selectors category --- */
+.nested-demo {
+    background-color: oklch(93.2% 0.032 255.585);
+    color: oklch(37.9% 0.146 265.522);
+    padding: 1.25rem;
+    border-color: oklch(80.9% 0.105 251.813);
+    border-width: 2px;
+    border-style: solid;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
+}
+
+/* --- Nested selectors category --- */
+.nested-demo:hover {
+    color: oklch(62.3% 0.214 259.815);
+    border-width: 2px;
+}
+
+/* --- Nested selectors category --- */
+.nested-demo:hover {
+    background-color: oklch(88.2% 0.059 254.128);
+}
+
+/* --- Nested selectors category --- */
+.nested-demo-secondary {
+    background-color: oklch(80.9% 0.105 251.813);
+    color: #fff;
+    -webkit-border-radius: 0.375rem;
+    -moz-border-radius: 0.375rem;
+    border-radius: 0.375rem;
+
+}
+
+/* --- Nested selectors category --- */
+.nested-demo-secondary:hover {
+    background-color: oklch(62.3% 0.214 259.815);
+}
+
+/* --- Nested selectors category --- */
+.nested-demo .variant {
+    background-color: oklch(80.9% 0.105 251.813);
+    color: #fff;
+    -webkit-border-radius: 0.375rem;
+    -moz-border-radius: 0.375rem;
+    border-radius: 0.375rem;
+
+}
+
+/* --- Nested selectors category --- */
+.nested-demo .variant:hover {
+    background-color: oklch(62.3% 0.214 259.815);
+}
+
+/* --- Nested selectors category --- */
+.nested-demo .group {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+
+    gap: 0.75rem;
+    margin: 1rem 0 0 0;
+}
+
+/* --- Nested selectors category --- */
+.nested-demo .group .item {
+    padding: 0.75rem;
+    background-color: oklch(62.3% 0.214 259.815 / 0.2);
+}
+
+/* --- Nested selectors category --- */
+.nested-demo .group .item:hover {
+    opacity: 0.9;
+}
+
+/* --- Nested selectors category --- */
+.nested-demo .group /* --- Nested selectors category --- */
+.nested-demo .group-item {
+    padding: 0.75rem;
+    background-color: oklch(62.3% 0.214 259.815 / 0.2);
+}
+
+/* --- Nested selectors category --- */
+.nested-demo .group /* --- Nested selectors category --- */
+.nested-demo .group-item:hover {
+    opacity: 0.9;
+}
+

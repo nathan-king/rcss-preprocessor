@@ -32,7 +32,7 @@ RCSS introduces nested property blocks that expand to multiple CSS rules:
 - `radius { ... }` can be used standalone to target only radii.
 - `flex { ... }` exposes `direction`, `wrap`, `justify`, `align`, `content`, and `gap`, automatically inserting `display: flex`.
 - `grid { ... }` mirrors the inline `grid:` shorthand (see below) for readability.
-- Nested selectors (e.g., `&:hover`, `& .child`) may now live inside any declaration block and are emitted relative to the current selector.
+- Nested selectors (e.g., `&:hover`, `& .child`, `.icon`, `&-primary` or comma-separated lists) may now live inside any declaration block—including property helpers like `border`, `flex`, `grid`, and `radius`—and are emitted by combining with the current selector context at every nesting level.
 
 ### Imports
 - Use `@import "./partials/base.rcss";` (CSS-style) to inline other RCSS files before parsing; relative paths resolve from the importing file.

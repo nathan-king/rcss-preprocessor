@@ -189,3 +189,50 @@ $accent: @emerald-500;
         box-shadow: @lg;
     }
 }
+
+/* --- Nested selectors category --- */
+.nested-demo {
+    background-color: @blue-100;
+    color: @blue-900;
+    padding: @5;
+    border {
+        color: @blue-300;
+        width: @2;
+        style: solid;
+        radius { all: @lg; }
+
+        &:hover {
+            color: @blue-500;
+            border-width: @2;
+        }
+    }
+
+    &:hover {
+        background-color: @blue-200;
+    }
+
+    &-secondary, & .variant {
+        background-color: @blue-300;
+        color: @white;
+        border-radius: @md;
+
+        &:hover {
+            background-color: @blue-500;
+        }
+    }
+
+    .group {
+        display: flex;
+        gap: @3;
+        margin: @4 0 0 0;
+
+        .item, & &-item {
+            padding: @3;
+            background-color: @blue-500/20;
+
+            &:hover {
+                opacity: 0.9;
+            }
+        }
+    }
+}

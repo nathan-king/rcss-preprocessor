@@ -135,7 +135,9 @@ pub fn parse(input: &str) -> Result<Stylesheet, String> {
         }
         let body = cleaned[body_start..body_end].to_string();
 
-        let (declarations, media, mut nested_rules) = parse_rule_body(&body, &selector, &blocks)?;
+        let selector_terms = split_selector_terms(&selector);
+        let (declarations, media, mut nested_rules) =
+            parse_rule_body(&body, &selector, &selector_terms, &blocks)?;
 
         rules.push(Rule {
             selector,
@@ -169,15 +171,17 @@ pub fn parse(input: &str) -> Result<Stylesheet, String> {
 fn parse_rule_body(
     body: &str,
     selector: &str,
+    selector_terms: &[String],
     blocks: &HashMap<String, Vec<Declaration>>,
 ) -> Result<(Vec<Declaration>, Vec<MediaBlock>, Vec<Rule>), String> {
     let normalized_body = normalize_braces(body);
     let mut reader = LineReader::new(&normalized_body);
-    parse_rule_body_from_reader(selector, &mut reader, blocks)
+    parse_rule_body_from_reader(selector, selector_terms, &mut reader, blocks)
 }
 
 fn parse_rule_body_from_reader<'a>(
     selector: &str,
+    selector_terms: &[String],
     reader: &mut LineReader<'a>,
     blocks: &HashMap<String, Vec<Declaration>>,
 ) -> Result<(Vec<Declaration>, Vec<MediaBlock>, Vec<Rule>), String> {
@@ -244,20 +248,25 @@ fn parse_rule_body_from_reader<'a>(
                         query,
                         declarations: inner_decls,
                     });
-                } else if header.contains('&') {
-                    let nested_selector = expand_nested_selector(selector, header);
-                    let block_body = collect_block_body(reader)?;
-                    let (inner_decls, inner_media, mut inner_nested) =
-                        parse_rule_body(&block_body, &nested_selector, blocks)?;
-                    nested_rules.push(Rule {
-                        selector: nested_selector.clone(),
-                        declarations: inner_decls,
-                        media: inner_media,
-                    });
-                    nested_rules.append(&mut inner_nested);
-                } else {
-                    let block_decls = parse_property_block(header, reader)?;
+                } else if is_property_block_header(header) {
+                    let (block_decls, mut nested_from_block) =
+                        parse_property_block(header, reader, selector, selector_terms, blocks)?;
                     declarations.extend(block_decls);
+                    nested_rules.append(&mut nested_from_block);
+                } else {
+                    let block_body = collect_block_body(reader)?;
+                    let nested_selectors = combine_selectors(selector_terms, header);
+                    for nested_selector in nested_selectors {
+                        let nested_terms = split_selector_terms(&nested_selector);
+                        let (inner_decls, inner_media, mut inner_nested) =
+                            parse_rule_body(&block_body, &nested_selector, &nested_terms, blocks)?;
+                        nested_rules.push(Rule {
+                            selector: nested_selector.clone(),
+                            declarations: inner_decls,
+                            media: inner_media,
+                        });
+                        nested_rules.append(&mut inner_nested);
+                    }
                 }
                 continue;
             }
@@ -307,8 +316,12 @@ fn is_media_header(header: &str) -> bool {
 fn parse_property_block<'a>(
     prefix: &str,
     reader: &mut LineReader<'a>,
-) -> Result<Vec<Declaration>, String> {
+    parent_selector: &str,
+    parent_terms: &[String],
+    blocks: &HashMap<String, Vec<Declaration>>,
+) -> Result<(Vec<Declaration>, Vec<Rule>), String> {
     let mut decls = Vec::new();
+    let mut nested_rules = Vec::new();
 
     while let Some((_inner_raw, _line)) = reader.next_line() {
         let inner = _inner_raw.trim();
@@ -334,10 +347,34 @@ fn parse_property_block<'a>(
             search_offset = fragment_start + fragment_raw.len();
 
             if fragment.ends_with('{') {
-                let name = fragment.trim_end_matches('{').trim();
-                let nested_prefix = format!("{}.{}", prefix, name);
-                let nested = parse_property_block(&nested_prefix, reader)?;
-                decls.extend(nested);
+                let header = fragment.trim_end_matches('{').trim();
+                if is_selector_header(header) {
+                    let block_body = collect_block_body(reader)?;
+                    let nested_selectors = combine_selectors(parent_terms, header);
+                    for nested_selector in nested_selectors {
+                        let nested_terms = split_selector_terms(&nested_selector);
+                        let (inner_decls, inner_media, mut inner_nested) =
+                            parse_rule_body(&block_body, &nested_selector, &nested_terms, blocks)?;
+                        nested_rules.push(Rule {
+                            selector: nested_selector.clone(),
+                            declarations: inner_decls,
+                            media: inner_media,
+                        });
+                        nested_rules.append(&mut inner_nested);
+                    }
+                    continue;
+                }
+
+                let nested_prefix = format!("{}.{}", prefix, header);
+                let (nested_block, mut nested_from_block) = parse_property_block(
+                    &nested_prefix,
+                    reader,
+                    parent_selector,
+                    parent_terms,
+                    blocks,
+                )?;
+                decls.extend(nested_block);
+                nested_rules.append(&mut nested_from_block);
                 continue;
             }
 
@@ -356,7 +393,7 @@ fn parse_property_block<'a>(
         }
     }
 
-    Ok(decls)
+    Ok((decls, nested_rules))
 }
 
 fn collect_block_body<'a>(reader: &mut LineReader<'a>) -> Result<String, String> {
@@ -383,13 +420,52 @@ fn collect_block_body<'a>(reader: &mut LineReader<'a>) -> Result<String, String>
     Err("Unexpected end of nested block".to_string())
 }
 
-fn expand_nested_selector(parent: &str, header: &str) -> String {
-    let trimmed = header.trim();
-    if trimmed.contains('&') {
-        trimmed.replace('&', parent)
-    } else {
-        format!("{} {}", parent, trimmed)
+fn split_selector_terms(selector: &str) -> Vec<String> {
+    selector
+        .split(',')
+        .map(str::trim)
+        .filter(|part| !part.is_empty())
+        .map(str::to_string)
+        .collect()
+}
+
+fn combine_selectors(parent_terms: &[String], header: &str) -> Vec<String> {
+    let child_terms = split_selector_terms(header);
+    let mut results = Vec::new();
+
+    for parent in parent_terms {
+        for child in &child_terms {
+            if parent.is_empty() || child.contains('&') {
+                results.push(child.replace('&', parent));
+            } else {
+                let trimmed = child.trim();
+                if trimmed.is_empty() {
+                    results.push(parent.clone());
+                } else {
+                    results.push(format!("{} {}", parent, trimmed));
+                }
+            }
+        }
     }
+
+    results
+}
+
+fn is_property_block_header(header: &str) -> bool {
+    matches!(header, "border" | "flex" | "grid" | "radius")
+}
+
+fn is_selector_header(header: &str) -> bool {
+    let trimmed = header.trim();
+    trimmed.contains('&')
+        || trimmed.contains('.')
+        || trimmed.contains('#')
+        || trimmed.contains(':')
+        || trimmed.contains('[')
+        || trimmed.contains('>')
+        || trimmed.contains('+')
+        || trimmed.contains('~')
+        || trimmed.contains('*')
 }
 
 fn normalize_braces(input: &str) -> String {
