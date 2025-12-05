@@ -3,21 +3,18 @@
   "name": "RCSS Accent (Catppuccin)",
   "type": "dark",
   "tokenColors": [
-    /* -------------------------------------------------------
-       RCSS VARIABLES — custom syntax
-    ------------------------------------------------------- */
     {
       "scope": "rcss.variable",
-      "settings": { "foreground": "#F9E2AF" }
+      "settings": { "foreground": "#B5E8EF" }
+    },
+    {
+      "scope": "rcss.selector.variable",
+      "settings": { "foreground": "#B5E8EF" }
     },
     {
       "scope": "rcss.variable.sigil",
-      "settings": { "foreground": "#FAB387" }
+      "settings": { "foreground": "#7BCCF4" }
     },
-
-    /* -------------------------------------------------------
-       RCSS TOKENS — @blue-500, @lg, @md
-    ------------------------------------------------------- */
     {
       "scope": "rcss.token",
       "settings": { "foreground": "#A6E3A1" }
@@ -26,83 +23,9 @@
       "scope": "rcss.token.sigil",
       "settings": { "foreground": "#94E2D5" }
     },
-
-    /* -------------------------------------------------------
-       PRESETS — %base-16, %dark-reading
-    ------------------------------------------------------- */
     {
       "scope": "rcss.preset",
       "settings": { "foreground": "#CBA6F7" }
-    },
-
-    /* -------------------------------------------------------
-       PROPERTIES — standard CSS scope
-    ------------------------------------------------------- */
-    {
-      "scope": "support.type.property-name.css",
-      "settings": { "foreground": "#74C7EC" }
-    },
-
-    /* -------------------------------------------------------
-       NUMBERS — standard CSS number scope
-    ------------------------------------------------------- */
-    {
-      "scope": "constant.numeric.css",
-      "settings": { "foreground": "#89DCEB" }
-    },
-
-    /* -------------------------------------------------------
-       STRINGS — CSS strings
-    ------------------------------------------------------- */
-    {
-      "scope": ["string.quoted.double.css", "string.quoted.single.css"],
-      "settings": { "foreground": "#CBA6F7" }
-    },
-
-    /* -------------------------------------------------------
-       FUNCTIONS — rotate(), width(), translate()
-       Keep standard CSS function scopes
-    ------------------------------------------------------- */
-    {
-      "scope": "support.function.misc.css",
-      "settings": { "foreground": "#B4BEFE" }
-    },
-
-    /* -------------------------------------------------------
-       SELECTORS — IDs, classes, tags
-       Use real CSS selector scopes
-    ------------------------------------------------------- */
-    {
-      "scope": "entity.other.attribute-name.class.css",
-      "settings": { "foreground": "#7F849C" }
-    },
-    {
-      "scope": "entity.other.attribute-name.id.css",
-      "settings": { "foreground": "#6C7086" }
-    },
-    {
-      "scope": "entity.name.tag.css",
-      "settings": { "foreground": "#9399B2" }
-    },
-
-    /* -------------------------------------------------------
-       KEYWORDS — apply, screen, dark, light
-    ------------------------------------------------------- */
-    {
-      "scope": "keyword.control.at-rule.css",
-      "settings": { "foreground": "#F38BA8" }
-    },
-
-    /* -------------------------------------------------------
-       COMMENTS — standard CSS comments
-    ------------------------------------------------------- */
-    {
-      "scope": "comment.line.double-slash.css",
-      "settings": { "foreground": "#7F849C", "fontStyle": "italic" }
-    },
-    {
-      "scope": "comment.block.css",
-      "settings": { "foreground": "#6C7086", "fontStyle": "italic" }
     }
   ]
 }

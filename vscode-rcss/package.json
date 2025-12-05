@@ -2,7 +2,7 @@
   "name": "rcss-syntax",
   "displayName": "RCSS Syntax",
   "description": "Lightweight TextMate grammar for RCSS (tokens, vars, presets, nested blocks).",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "publisher": "local",
   "main": "./extension.js",
   "engines": {

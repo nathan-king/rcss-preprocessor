@@ -19,7 +19,7 @@ The extension can run the RCSS compiler whenever you save an `.rcss` file (and e
    cd vscode-rcss
    pnpm dlx @vscode/vsce package   # or: npx @vscode/vsce package
    ```
-   This produces `rcss-syntax-0.0.3.vsix`.
+   This produces `rcss-syntax-0.0.8.vsix`.
 2) In VS Code, run “Extensions: Install from VSIX…” and pick that file.
 
 ## What it highlights
@@ -29,21 +29,20 @@ The extension can run the RCSS compiler whenever you save an `.rcss` file (and e
 Grammar source: `syntaxes/rcss.tmLanguage.json`. Language config (comments, brackets) lives in `language-configuration.json`.
 
 ## Optional coloring suggestions
-Add this to your VS Code settings to tune colors and remove italics on properties:
+Add this to your VS Code settings to tweak RCSS-only colors:
 ```json
 {
   "editor.tokenColorCustomizations": {
     "textMateRules": [
-      { "scope": "support.type.property-name.css.rcss", "settings": { "fontStyle": "" } },
-      { "scope": "variable.other.readwrite.rcss", "settings": { "foreground": "#f9c513" } },
-      { "scope": "punctuation.definition.variable.rcss", "settings": { "foreground": "#b58900" } },
-      { "scope": "constant.other.rcss", "settings": { "foreground": "#66d9ef" } },
-      { "scope": "punctuation.separator.constant.rcss", "settings": { "foreground": "#8ec7ff" } },
-      { "scope": "punctuation.definition.constant.rcss", "settings": { "foreground": "#2aa198" } }
+      { "scope": "rcss.variable", "settings": { "foreground": "#f9c513" } },
+      { "scope": "rcss.variable.sigil", "settings": { "foreground": "#b58900" } },
+      { "scope": "rcss.token", "settings": { "foreground": "#66d9ef" } },
+      { "scope": "rcss.token.sigil", "settings": { "foreground": "#8ec7ff" } },
+      { "scope": "rcss.preset", "settings": { "foreground": "#2aa198" } }
     ]
   }
 }
 ```
 Tweak the hex colors to match your theme (use darker shades for dark themes, lighter for light themes). Tokens and prefixes are scoped separately so you can downplay the `@` while keeping token names bright; same for `$` prefixes on variables.
 
-Alternatively, select the bundled color theme “RCSS Accent” (Command Palette → Preferences: Color Theme → RCSS Accent) to apply these overrides automatically, including removing italics on properties.
+Alternatively, select the bundled color theme “RCSS Accent” (Command Palette → Preferences: Color Theme → RCSS Accent) to highlight just the RCSS-only scopes, while the rest of the CSS syntax inherits whatever main theme you’re using.
