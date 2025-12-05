@@ -1,0 +1,9 @@
+{
+  "inherit": "inherit",
+  "current": "currentcolor",
+  "black": "#000",
+  "white": "#fff",
+  "blue": {
+    "200": "oklch(80.9% 0.105 251.813)"
+  }
+}

@@ -1,0 +1,1 @@
+4.0.21-git|/opt/homebrew/Cellar/emscripten/4.0.21/libexec/llvm/bin

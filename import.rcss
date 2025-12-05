@@ -1,0 +1,5 @@
+.imported-heading {
+    font: @sans @lg @semibold;
+    letter-spacing: @wide;
+    color: @blue-200;
+}

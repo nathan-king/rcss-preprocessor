@@ -1,15 +1,37 @@
 {
-  "font": {
-    "font-size": "font_size",
-    "font-weight": "font_weight",
-    "font-style": "font_style",
-    "line-height": "line_height",
-    "letter-spacing": "letter_spacing"
+  "shadow": {
+    "steps": [
+      { "property": "box-shadow", "template": "@{token}" }
+    ]
   },
-  "border": {
-    "color": "border_color",
-    "width": "border_width",
-    "style": "border_style",
-    "radius": "border_radius"
+  "ring": {
+    "steps": [
+      { "property": "box-shadow", "template": "0 0 0 @{width} @{color} / @{opacity}" },
+      { "property": "box-shadow", "template": "0 0 0 @{offsetWidth} @{offsetColor}", "append": true, "optional": true }
+    ]
+  },
+  "transform": {
+    "steps": [
+      { "property": "transform", "template": "translate(@{translate}) rotate(@{rotate}) skew(@{skew}) scale(@{scale})" }
+    ]
+  },
+  "filter": {
+    "steps": [
+      { "property": "filter", "template": "blur(@{blur}) brightness(@{brightness}) contrast(@{contrast}) hue-rotate(@{hueRotate}) saturate(@{saturate}) drop-shadow(@{dropShadow})" }
+    ]
+  },
+  "gradient": {
+    "steps": [
+      { "property": "background-image", "template": "linear-gradient(to right, @{from}, @{via}, @{to})" }
+    ]
+  },
+  "font": {
+    "order": ["family", "size", "weight", "style"],
+    "steps": [
+      { "property": "font-family", "template": "@{family}" },
+      { "property": "font-size", "template": "@{size}", "optional": true },
+      { "property": "font-weight", "template": "@{weight}", "optional": true },
+      { "property": "font-style", "template": "@{style}", "optional": true }
+    ]
   }
 }

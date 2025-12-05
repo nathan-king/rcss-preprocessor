@@ -1,0 +1,6 @@
+@import "./a.rcss";
+@import "./c.rcss";
+
+.b {
+    content: "B";
+}

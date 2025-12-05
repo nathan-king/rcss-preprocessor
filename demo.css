@@ -1,7 +1,259 @@
-.button {
-    padding: 1.5rem;
-    color: oklch(62.7% 0.265 303.9 / 0.80);
-    font-size: 1rem;
-    background-color: oklch(47% 0.157 37.304 / 0.70);
+:root {
+    font-size: 16px;
+    line-height: 1.5;
+    font-family: sans-serif;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    font-size: 16px;
+    line-height: 1.5;
+    font-family: sans-serif;
+  }
+}
+
+.imported-heading {
+    font-family: ui-sans-serif;
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    color: oklch(88.2% 0.059 254.128);
+}
+
+/* --- Foundations category --- */
+
+
+.foundation-spacing {
+    background-color: oklch(80.9% 0.105 251.813);
+    background-image: -webkit-linear-gradient(to right, var(--tw-gradient-stops));
+    background-image: linear-gradient(to right, var(--tw-gradient-stops));
+
+    gap: 0.75rem;
+    margin: 1rem auto;
+    width: 1rem;
+    height: 0.5rem;
+    inset: 0.25rem;
+    columns: 28rem;
+}
+
+@media (min-width: 48rem) {
+  /* --- Foundations category --- */
+
+
+.foundation-spacing {
+    width: 1.5rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  /* --- Foundations category --- */
+
+
+.foundation-spacing {
+    width: 2rem;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  /* --- Foundations category --- */
+
+
+.foundation-spacing {
+    background-color: oklch(42.4% 0.199 265.638);
+    color: oklch(88.2% 0.059 254.128);
+  }
+}
+
+/* --- Foundations category --- */
+
+
+.foundation-spacing:hover {
+    background-color: oklch(70.7% 0.165 254.624);
+}
+
+.foundation-typography {
+    font-family: ui-sans-serif;
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: 0.025em;
+    color: #fff;
+}
+
+.foundation-card {
+    background-color: oklch(93.2% 0.032 255.585);
+    -webkit-border-radius: 0.5rem;
+    -moz-border-radius: 0.5rem;
+    border-radius: 0.5rem;
+
+    -webkit-box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1), 0 0 0 0.5rem oklch(63.7% 0.237 25.331) / 0.5, 0 0 0 1px oklch(88.2% 0.059 254.128 / 0.5);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1), 0 0 0 0.5rem oklch(63.7% 0.237 25.331) / 0.5, 0 0 0 1px oklch(88.2% 0.059 254.128 / 0.5);
+
+}
+
+/* --- Grid systems category --- */
+.grid-inline {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: 1rem auto 1fr;
+    gap: 1rem;
+}
+
+.grid-block {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: 1rem auto 1fr;
+    gap: 1rem;
+}
+
+.grid-areas {
+    display: grid;
+    grid-template-areas: 
+    "header header"
+    "sidebar main";
+}
+
+.grid-masonry {
+    display: block;
+    column-count: 4;
+    column-gap: 0.5rem;
+}
+
+/* --- Border & radius category --- */
+.border-outline {
+    border-color: oklch(55.4% 0.046 257.417);
+    border-width: 2px;
+    border-style: solid;
+    outline-width: 2px;
+    outline-color: oklch(63.7% 0.237 25.331 / 0.8);
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
+}
+
+.border-detail {
+    border-color: oklch(62.3% 0.214 259.815);
+    border-width: 2px;
+    border-style: solid;
+    border-top-left-radius: 0.125rem;
+    border-top-right-radius: 0.125rem;
+    border-bottom-right-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
+}
+
+.radius-only {
+    border-top-left-radius: 0.125rem;
+    border-top-right-radius: 0.125rem;
+    border-bottom-right-radius: 0.375rem;
+    border-bottom-left-radius: 0.5rem;
+}
+
+/* --- Color & effects category --- */
+.color-func-demo {
+    color: color-mix(in srgb, oklch(70.4% 0.191 22.216) 40%, oklch(62.3% 0.214 259.815));
+    background: color-mix(in srgb, white 20%, oklch(62.3% 0.214 259.815));
+    border-color: color-mix(in srgb, black 10%, oklch(55.4% 0.046 257.417));
+    -webkit-box-shadow: 0 0 0 2px color-mix(in srgb, oklch(62.3% 0.214 259.815) 50%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, oklch(62.3% 0.214 259.815) 50%, transparent);
+
+    --shade: color-mix(in srgb, black 15%, oklch(62.3% 0.214 259.815));
+    --tint: color-mix(in srgb, white 25%, oklch(62.3% 0.214 259.815));
+    --tone: color-mix(in srgb, gray 30%, oklch(62.3% 0.214 259.815));
+}
+
+.gradient-demo {
+    background-color: oklch(93.2% 0.032 255.585);
+    background-image: -webkit-linear-gradient(to right, oklch(62.3% 0.214 259.815), oklch(80.9% 0.105 251.813), #fff);
+    background-image: linear-gradient(to right, oklch(62.3% 0.214 259.815), oklch(80.9% 0.105 251.813), #fff);
+
+}
+
+.token-mix {
+    width: calc(1rem * 2);
+    max-width: calc(100% - 1rem);
+    background: linear-gradient(to right, oklch(63.7% 0.237 25.331), oklch(70.7% 0.165 254.624 / 0.5));
+    background-image: url("images/oklch(63.7% 0.237 25.331).svg");
+    margin: 1rem auto;
+    -webkit-box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1), 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1), 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+    border-color: oklch(69.6% 0.17 162.48);
+    border-width: 1px;
+    border-style: solid;
+    color: oklch(63.7% 0.237 25.331);
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
+}
+
+/* --- Autoprefixed effects category --- */
+.prefixed-effects {
+    background-color: oklch(37.9% 0.146 265.522);
+    color: #fff;
+    -webkit-transform: translate(0) rotate(-3deg) skew(0) scale(1.03);
+    -ms-transform: translate(0) rotate(-3deg) skew(0) scale(1.03);
+    transform: translate(0) rotate(-3deg) skew(0) scale(1.03);
+
+    -webkit-filter: blur(2px) brightness(1) contrast(1) hue-rotate(0deg) saturate(1) drop-shadow(none);
+    filter: blur(2px) brightness(1) contrast(1) hue-rotate(0deg) saturate(1) drop-shadow(none);
+
+    backdrop: blur(12px);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    cursor: -webkit-grab;
+    cursor: grab;
+
+    -webkit-box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+
+}
+
+/* --- Flex shorthand category --- */
+.flex-demo {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    align-content: between;
+    gap: 1rem;
+}
+
+/* --- Interaction category --- */
+.interactive-demo {
+    background-color: oklch(48.8% 0.243 264.376);
+    color: #fff;
+    padding: 1rem;
+    border-color: oklch(70.7% 0.165 254.624);
+    border-width: 1px;
+    border-style: solid;
+    transition: opacity 200ms ease;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
+}
+
+@media (min-width: 48rem) {
+  /* --- Interaction category --- */
+.interactive-demo {
+    -webkit-box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  }
+}
+
+/* --- Interaction category --- */
+.interactive-demo:hover {
+    opacity: 0.8;
+    background-color: oklch(62.3% 0.214 259.815);
+    cursor: -webkit-grab;
+    cursor: grab;
+
+}

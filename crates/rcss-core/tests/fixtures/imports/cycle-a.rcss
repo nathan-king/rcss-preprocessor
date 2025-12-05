@@ -1,0 +1,5 @@
+@import "./cycle-b.rcss";
+
+.cycle-a {
+    content: "a";
+}

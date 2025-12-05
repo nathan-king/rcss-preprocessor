@@ -3,9 +3,9 @@ mod cli;
 use clap::Parser;
 use cli::{Cli, Commands};
 
-use std::fs;
+use std::{fs, path::Path};
 
-use rcss_core::{emitter, parser, resolver, theme::Theme};
+use rcss_core::{emitter, loader::load_with_imports, parser, resolver, theme::Theme};
 
 fn main() {
     let args = Cli::parse();
@@ -25,7 +25,8 @@ fn run_build(input_path: &str, output_override: Option<String>) {
     };
 
     let theme = Theme::load_from_dir("theme").expect("Failed to load theme");
-    let src = fs::read_to_string(input_path).expect("Failed to read input RCSS file");
+    let src = load_with_imports(Path::new(input_path))
+        .unwrap_or_else(|e| panic!("Failed to load RCSS imports: {}", e));
 
     let stylesheet = parser::parse(&src).expect("Failed to parse RCSS");
 

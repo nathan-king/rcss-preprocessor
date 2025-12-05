@@ -1,0 +1,6 @@
+@import "./a.rcss";
+@import "./a.rcss";
+
+.b-dup {
+    content: "B-DUP";
+}

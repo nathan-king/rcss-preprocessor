@@ -1,56 +1,94 @@
 use serde::Deserialize;
+use serde_json::Value;
 use std::collections::HashMap;
 use std::fs;
 
 #[derive(Debug, Deserialize)]
 pub struct Theme {
-    pub spacing: HashMap<String, String>,
-    pub colors: HashMap<String, HashMap<String, String>>,
-    pub font_size: HashMap<String, FontSizeEntry>,
-    pub opacity: HashMap<String, String>,
+    pub collections: HashMap<String, Value>,
+    pub properties: HashMap<String, PropertyMapping>,
+    #[serde(default)]
+    pub shorthands: HashMap<String, ShorthandDef>,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct FontSizeEntry {
-    pub size: String,
+pub struct PropertyMapping {
+    pub collection: String,
+    #[serde(default)]
+    pub overrides: HashMap<String, Value>,
+}
 
-    #[serde(rename = "lineHeight")]
-    pub line_height: String,
+#[derive(Debug, Deserialize)]
+pub struct ShorthandStep {
+    pub property: String,
+    pub template: String,
+    #[serde(default)]
+    pub append: bool,
+    #[serde(default)]
+    pub optional: bool,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ShorthandDef {
+    pub steps: Vec<ShorthandStep>,
+    pub order: Option<Vec<String>>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+enum RawShorthand {
+    Steps(Vec<ShorthandStep>),
+    Object {
+        steps: Vec<ShorthandStep>,
+        #[serde(default)]
+        order: Vec<String>,
+    },
 }
 
 impl Theme {
     pub fn load_from_dir(dir: &str) -> Result<Self, String> {
-        let base = format!("{}/tokens", dir);
-        let spacing: HashMap<String, String> = load_json(&format!("{}/spacing.json", base))?;
+        let path = format!("{}/tokens.json", dir);
+        let mut theme = Self::load(&path)?;
 
-        let colors: HashMap<String, HashMap<String, String>> =
-            load_json(&format!("{}/colors.json", base))?;
+        // Load shorthands if present
+        let shorthand_path = format!("{}/shorthands.json", dir);
+        if let Ok(data) = fs::read_to_string(&shorthand_path) {
+            let raw: serde_json::Value = serde_json::from_str(&data)
+                .map_err(|e| format!("Invalid JSON in {}: {}", shorthand_path, e))?;
+            let mut shorthands = HashMap::new();
 
-        let font_size: HashMap<String, FontSizeEntry> =
-            load_json(&format!("{}/font-size.json", base))?;
+            let obj = raw.as_object().ok_or_else(|| {
+                format!(
+                    "Invalid JSON in {}: root should be an object",
+                    shorthand_path
+                )
+            })?;
 
-        let opacity: HashMap<String, String> = load_json(&format!("{}/opacity.json", base))?;
+            for (key, val) in obj {
+                let parsed: RawShorthand = serde_json::from_value(val.clone())
+                    .map_err(|e| format!("Invalid shorthand '{}': {}", key, e))?;
 
-        Ok(Self {
-            spacing,
-            colors,
-            font_size,
-            opacity,
-        })
+                let def = match parsed {
+                    RawShorthand::Steps(steps) => ShorthandDef { steps, order: None },
+                    RawShorthand::Object { steps, order } => {
+                        let order = if order.is_empty() { None } else { Some(order) };
+                        ShorthandDef { steps, order }
+                    }
+                };
+
+                shorthands.insert(key.clone(), def);
+            }
+
+            theme.shorthands = shorthands;
+        }
+
+        Ok(theme)
     }
 
-    /// Original single-file loader still supported (optional)
     pub fn load(path: &str) -> Result<Self, String> {
         let data =
             fs::read_to_string(path).map_err(|e| format!("Could not read {}: {}", path, e))?;
 
         serde_json::from_str(&data).map_err(|e| format!("Invalid JSON in {}: {}", path, e))
     }
-}
-
-/// Generic JSON loader with type inference
-fn load_json<T: for<'de> serde::Deserialize<'de>>(path: &str) -> Result<T, String> {
-    let data = fs::read_to_string(path).map_err(|e| format!("Failed to read {}: {}", path, e))?;
-
-    serde_json::from_str::<T>(&data).map_err(|e| format!("Failed to parse JSON {}: {}", path, e))
 }

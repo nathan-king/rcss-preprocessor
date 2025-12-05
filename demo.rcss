@@ -1,6 +1,191 @@
-.button {
-    padding: @6;
-    color: @purple-500/80;
-    font-size: @md;
-    background-color: @orange-800/70;
+@import "./import.rcss";
+
+%base-16
+%dark base-16
+
+/* --- Foundations category --- */
+$card {
+    background-color: @blue-100;
+    border-radius: @lg;
+    shadow: @lg;
+    ring: width(@2) color(@red-500) opacity(0.5) offset-width(@1) offset-color(@blue-200/50);
+}
+
+$accent: @emerald-500;
+
+.foundation-spacing {
+    background-color: @blue-300;
+    background-image: @linear-to-r;
+    gap: @3;
+    margin: @4 auto;
+    width: @4;
+    height: @2;
+    inset: @1;
+    columns: @md;
+
+    screen(@md) {
+        width: @6;
+    }
+
+    screen(@lg) {
+        width: @8;
+    }
+
+    dark {
+        background-color: @blue-800;
+        color: @blue-200;
+    }
+
+    &:hover {
+        background-color: @blue-400;
+    }
+}
+
+.foundation-typography {
+    font: @sans @lg @bold;
+    letter-spacing: @wide;
+    color: @white;
+}
+
+.foundation-card {
+    apply: $card;
+}
+
+/* --- Grid systems category --- */
+.grid-inline {
+    grid: cols(3) rows(@4 auto 1fr) gap(@4);
+}
+
+.grid-block {
+    grid {
+        cols: 3;
+        rows: @4 auto 1fr;
+        gap: @4;
+    }
+}
+
+.grid-areas {
+    grid: areas("header header" "sidebar main");
+}
+
+.grid-masonry {
+    grid: masonry columns(4) gap(@2);
+}
+
+/* --- Border & radius category --- */
+.border-outline {
+    border {
+        color: @slate-500;
+        width: @2;
+        style: solid;
+        radius {
+            all: @lg;
+        }
+    }
+    outline-width: @2;
+    outline-color: @red-500/80;
+}
+
+.border-detail {
+    border {
+        color: @blue-500;
+        width: @2;
+        style: solid;
+        radius {
+            block: @sm @lg;
+            inline: @lg;
+            top-left: @sm;
+        }
+    }
+}
+
+.radius-only {
+    radius {
+        all: @lg;
+        inline: @lg;
+        block: @sm @lg;
+        bottom-right: @md;
+    }
+}
+
+/* --- Color & effects category --- */
+.color-func-demo {
+    color: mix(@blue-500, @red-400, 40%);
+    background: lighten(@blue-500, 20%);
+    border-color: darken(@slate-500, 10%);
+    box-shadow: 0 0 0 2px alpha(@blue-500, 50%);
+    --shade: shade(@blue-500, 15%);
+    --tint: tint(@blue-500, 25%);
+    --tone: tone(@blue-500, 30%);
+}
+
+.gradient-demo {
+    background-color: @blue-100;
+    gradient: from(@blue-500) via(@blue-300) to(@white);
+}
+
+.token-mix {
+    width: calc(@4 * 2);
+    max-width: calc(100% - @4);
+    background: linear-gradient(to right, @red-500, @blue-400/50);
+    background-image: @(images/@blue-500.svg);
+    margin: @4 auto;
+    box-shadow: @md, @lg;
+    border {
+        color: $accent;
+        width: 1px;
+        style: solid;
+        radius {
+            all: @lg;
+        }
+    }
+    color: @red-500;
+}
+
+/* --- Autoprefixed effects category --- */
+.prefixed-effects {
+    background-color: @blue-900;
+    color: @white;
+    transform: translate(0) rotate(-3deg) skew(0) scale(1.03);
+    filter: blur(2px) brightness(1) contrast(1) hue-rotate(0deg) saturate(1) drop-shadow(none);
+    backdrop: blur(12px);
+    appearance: none;
+    cursor: grab;
+    box-shadow: @md;
+}
+
+/* --- Flex shorthand category --- */
+.flex-demo {
+    flex {
+        direction: row;
+        wrap: wrap;
+        justify: center;
+        align: center;
+        content: between;
+        gap: @4;
+    }
+}
+
+/* --- Interaction category --- */
+.interactive-demo {
+    background-color: @blue-700;
+    color: @white;
+    padding: @4;
+    border {
+        color: @blue-400;
+        width: 1px;
+        style: solid;
+        radius { all: @lg; }
+    }
+    transition: opacity 200ms ease;
+
+    &:hover {
+        opacity: 0.8;
+        background-color: @blue-500;
+        cursor: grab;
+    }
+
+    screen(@md) {
+        box-shadow: @lg;
+    }
 }
