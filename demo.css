@@ -171,8 +171,10 @@
 .token-mix {
     width: calc(1rem * 2);
     max-width: calc(100% - 1rem);
+    background: -webkit-linear-gradient(to right, oklch(63.7% 0.237 25.331), oklch(70.7% 0.165 254.624 / 0.5));
     background: linear-gradient(to right, oklch(63.7% 0.237 25.331), oklch(70.7% 0.165 254.624 / 0.5));
-    background-image: url("images/oklch(63.7% 0.237 25.331).svg");
+
+    background-image: url("images/oklch(62.3% 0.214 259.815).svg");
     margin: 1rem auto;
     -webkit-box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1), 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1), 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -257,3 +259,4 @@
     cursor: grab;
 
 }
+

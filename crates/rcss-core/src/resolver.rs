@@ -5,7 +5,8 @@ use serde_json::Value;
 use std::collections::{HashMap, HashSet};
 
 pub fn resolve(mut stylesheet: Stylesheet, theme: &Theme) -> Result<Stylesheet, String> {
-    for rule in &mut stylesheet {
+    let variables = stylesheet.variables.clone();
+    for rule in &mut stylesheet.rules {
         let mut new_decls = Vec::new();
         let mut display_defined = rule.declarations.iter().any(|d| d.property == "display");
         let mut radius_entries: Vec<(String, String)> = Vec::new();
@@ -16,8 +17,13 @@ pub fn resolve(mut stylesheet: Stylesheet, theme: &Theme) -> Result<Stylesheet, 
             let decl_span = decl.span;
             if decl.property == "grid" {
                 let commands = parse_grid_commands(&decl.value)?;
-                let (mut grid_decls, display_added) =
-                    build_grid_declarations(&commands, theme, display_defined, decl_span)?;
+                let (mut grid_decls, display_added) = build_grid_declarations(
+                    &commands,
+                    theme,
+                    display_defined,
+                    decl_span,
+                    &variables,
+                )?;
                 display_defined |= display_added;
                 new_decls.append(&mut grid_decls);
                 continue;
@@ -37,7 +43,7 @@ pub fn resolve(mut stylesheet: Stylesheet, theme: &Theme) -> Result<Stylesheet, 
             if let Some(expanded) = expand_shorthand(&decl.property, &decl.value, theme)? {
                 let mut resolved_expanded = Vec::new();
                 for (prop, val, append) in expanded {
-                    let resolved_value = resolve_value(&val, &prop, theme, decl_span)?;
+                    let resolved_value = resolve_value(&val, &prop, theme, decl_span, &variables)?;
                     resolved_expanded.push((prop, resolved_value, append));
                 }
                 merge_declarations(&mut new_decls, resolved_expanded);
@@ -45,7 +51,7 @@ pub fn resolve(mut stylesheet: Stylesheet, theme: &Theme) -> Result<Stylesheet, 
             }
 
             if let Some(mapped) = map_border_subproperty(&decl.property) {
-                let resolved = resolve_value(&decl.value, mapped, theme, decl_span)?;
+                let resolved = resolve_value(&decl.value, mapped, theme, decl_span, &variables)?;
                 new_decls.push(Declaration {
                     property: mapped.to_string(),
                     value: resolved,
@@ -55,7 +61,7 @@ pub fn resolve(mut stylesheet: Stylesheet, theme: &Theme) -> Result<Stylesheet, 
             }
 
             if let Some(mapped) = map_flex_subproperty(&decl.property) {
-                let resolved = resolve_value(&decl.value, mapped, theme, decl_span)?;
+                let resolved = resolve_value(&decl.value, mapped, theme, decl_span, &variables)?;
                 new_decls.push(Declaration {
                     property: mapped.to_string(),
                     value: resolved,
@@ -65,19 +71,24 @@ pub fn resolve(mut stylesheet: Stylesheet, theme: &Theme) -> Result<Stylesheet, 
                 continue;
             }
 
-            decl.value = resolve_value(&decl.value, &decl.property, theme, decl_span)?;
+            decl.value = resolve_value(&decl.value, &decl.property, theme, decl_span, &variables)?;
             new_decls.push(decl);
         }
 
         if !radius_entries.is_empty() {
-            let mut expanded = expand_radius_entries(&radius_entries, theme)?;
+            let mut expanded = expand_radius_entries(&radius_entries, theme, &variables)?;
             new_decls.append(&mut expanded);
         }
 
         if !grid_block_entries.is_empty() {
             let commands = build_grid_commands_from_block(&grid_block_entries)?;
-            let (mut grid_decls, display_added) =
-                build_grid_declarations(&commands, theme, display_defined, Span::dummy())?;
+            let (mut grid_decls, display_added) = build_grid_declarations(
+                &commands,
+                theme,
+                display_defined,
+                Span::dummy(),
+                &variables,
+            )?;
             display_defined |= display_added;
             new_decls.append(&mut grid_decls);
         }
@@ -99,7 +110,13 @@ pub fn resolve(mut stylesheet: Stylesheet, theme: &Theme) -> Result<Stylesheet, 
         for media in &mut rule.media {
             media.query = resolve_media_query(&media.query, theme)?;
             for decl in &mut media.declarations {
-                decl.value = resolve_value(&decl.value, &decl.property, theme, Span::dummy())?;
+                decl.value = resolve_value(
+                    &decl.value,
+                    &decl.property,
+                    theme,
+                    Span::dummy(),
+                    &variables,
+                )?;
             }
         }
     }
@@ -130,9 +147,127 @@ fn resolve_media_query(query: &str, theme: &Theme) -> Result<String, String> {
     Ok(trimmed.to_string())
 }
 
-fn resolve_value(value: &str, property: &str, theme: &Theme, span: Span) -> Result<String, String> {
-    let interpolated = resolve_interpolations(value, property, theme, span)?;
-    Ok(apply_color_functions(&interpolated))
+fn resolve_value(
+    value: &str,
+    property: &str,
+    theme: &Theme,
+    span: Span,
+    variables: &HashMap<String, String>,
+) -> Result<String, String> {
+    let interpolated = resolve_variables(value, variables, span)?;
+    let resolved = resolve_interpolations(&interpolated, property, theme, span)?;
+    Ok(apply_color_functions(&resolved))
+}
+
+fn resolve_variables(
+    value: &str,
+    vars: &HashMap<String, String>,
+    span: Span,
+) -> Result<String, String> {
+    resolve_variables_inner(value, vars, span, 0)
+}
+
+fn resolve_variables_inner(
+    value: &str,
+    vars: &HashMap<String, String>,
+    span: Span,
+    depth: usize,
+) -> Result<String, String> {
+    if depth > 16 {
+        return Err(span_error(
+            span,
+            "RCSS variable error: maximum recursion depth exceeded",
+        ));
+    }
+
+    let mut out = String::new();
+    let mut idx = 0;
+
+    while idx < value.len() {
+        let ch = value[idx..].chars().next().unwrap();
+        let ch_len = ch.len_utf8();
+
+        if ch == '$' {
+            let prev = prev_char(value, idx);
+            if !is_variable_boundary(prev) {
+                out.push(ch);
+                idx += ch_len;
+                continue;
+            }
+
+            let start = idx + ch_len;
+            if let Some((name, consumed)) = consume_variable_name(value, start) {
+                if consumed == 0 {
+                    out.push(ch);
+                    idx += ch_len;
+                    continue;
+                }
+
+                let replacement = vars.get(&name).ok_or_else(|| {
+                    span_error(
+                        span.with_offset(idx),
+                        format!("RCSS variable error: unknown variable '${}'", name),
+                    )
+                })?;
+                let resolved_replacement =
+                    resolve_variables_inner(replacement, vars, span.with_offset(idx), depth + 1)?;
+                out.push_str(&resolved_replacement);
+                idx = start + consumed;
+                continue;
+            }
+        }
+
+        out.push(ch);
+        idx += ch_len;
+    }
+
+    Ok(out)
+}
+
+fn consume_variable_name(value: &str, start: usize) -> Option<(String, usize)> {
+    if start >= value.len() {
+        return None;
+    }
+
+    let mut cursor = start;
+    let first = value[cursor..].chars().next()?;
+    if !is_variable_start(first) {
+        return None;
+    }
+
+    let mut name = String::new();
+    loop {
+        if cursor >= value.len() {
+            break;
+        }
+        let ch = value[cursor..].chars().next().unwrap();
+        if name.is_empty() {
+            if !is_variable_start(ch) {
+                break;
+            }
+        } else if !is_variable_char(ch) {
+            break;
+        }
+        name.push(ch);
+        cursor += ch.len_utf8();
+    }
+
+    Some((name, cursor - start))
+}
+
+fn is_variable_boundary(prev: Option<char>) -> bool {
+    match prev {
+        None => true,
+        Some(ch) => !is_variable_char(ch),
+    }
+}
+
+fn is_variable_start(ch: char) -> bool {
+    ch.is_ascii_alphabetic() || ch == '_'
+}
+
+fn is_variable_char(ch: char) -> bool {
+    ch.is_ascii_alphanumeric() || ch == '_' || ch == '-'
 }
 
 fn resolve_interpolations(
@@ -687,6 +822,7 @@ fn build_grid_declarations(
     theme: &Theme,
     display_defined: bool,
     span: Span,
+    variables: &HashMap<String, String>,
 ) -> Result<(Vec<crate::ast::Declaration>, bool), String> {
     use GridCommand::*;
 
@@ -772,7 +908,7 @@ fn build_grid_declarations(
         }
 
         if let Some(columns) = columns_arg {
-            let count = resolve_grid_integer(columns, "columns()", theme, span)?;
+            let count = resolve_grid_integer(columns, "columns()", theme, span, variables)?;
             declarations.push(Declaration {
                 property: "column-count".to_string(),
                 value: count.to_string(),
@@ -789,7 +925,7 @@ fn build_grid_declarations(
                     "RCSS grid error: masonry gap() only supports a single value".to_string(),
                 );
             }
-            let column_gap = resolve_value(&gap_values[0], "gap", theme, span)?;
+            let column_gap = resolve_value(&gap_values[0], "gap", theme, span, variables)?;
             declarations.push(Declaration {
                 property: "column-gap".to_string(),
                 value: column_gap,
@@ -810,7 +946,7 @@ fn build_grid_declarations(
     }
 
     if let Some(cols) = cols_arg {
-        let count = resolve_grid_integer(cols, "cols()", theme, span)?;
+        let count = resolve_grid_integer(cols, "cols()", theme, span, variables)?;
         let value = format!("repeat({}, minmax(0, 1fr))", count);
         declarations.push(Declaration {
             property: "grid-template-columns".to_string(),
@@ -820,7 +956,7 @@ fn build_grid_declarations(
     }
 
     if let Some(rows) = rows_arg {
-        let resolved = resolve_value_list(&rows, "gap", theme, span)?;
+        let resolved = resolve_value_list(&rows, "gap", theme, span, variables)?;
         declarations.push(Declaration {
             property: "grid-template-rows".to_string(),
             value: resolved.join(" "),
@@ -831,7 +967,7 @@ fn build_grid_declarations(
     if let Some(gap_values) = gap_arg {
         match gap_values.len() {
             1 => {
-                let resolved = resolve_value(&gap_values[0], "gap", theme, span)?;
+                let resolved = resolve_value(&gap_values[0], "gap", theme, span, variables)?;
                 declarations.push(Declaration {
                     property: "gap".to_string(),
                     value: resolved,
@@ -839,8 +975,8 @@ fn build_grid_declarations(
                 });
             }
             2 => {
-                let row_gap = resolve_value(&gap_values[0], "gap", theme, span)?;
-                let col_gap = resolve_value(&gap_values[1], "gap", theme, span)?;
+                let row_gap = resolve_value(&gap_values[0], "gap", theme, span, variables)?;
+                let col_gap = resolve_value(&gap_values[1], "gap", theme, span, variables)?;
                 declarations.push(Declaration {
                     property: "row-gap".to_string(),
                     value: row_gap,
@@ -874,10 +1010,11 @@ fn resolve_value_list(
     property: &str,
     theme: &Theme,
     span: Span,
+    variables: &HashMap<String, String>,
 ) -> Result<Vec<String>, String> {
     values
         .iter()
-        .map(|v| resolve_value(v, property, theme, span))
+        .map(|v| resolve_value(v, property, theme, span, variables))
         .collect()
 }
 
@@ -886,6 +1023,7 @@ fn resolve_grid_integer(
     context: &str,
     theme: &Theme,
     span: Span,
+    variables: &HashMap<String, String>,
 ) -> Result<i32, String> {
     let raw = value.trim();
     if let Ok(num) = raw.parse::<i32>() {
@@ -896,7 +1034,7 @@ fn resolve_grid_integer(
             return Ok(num);
         }
     }
-    let resolved = resolve_value(raw, "columns", theme, span).map_err(|_| {
+    let resolved = resolve_value(raw, "columns", theme, span, variables).map_err(|_| {
         span_error(
             span,
             format!(
@@ -1192,6 +1330,7 @@ fn extract_radius_key(property: &str) -> Option<&str> {
 fn expand_radius_entries(
     entries: &[(String, String)],
     theme: &Theme,
+    variables: &HashMap<String, String>,
 ) -> Result<Vec<Declaration>, String> {
     let mut spec = RadiusSpec::default();
     for (key, value) in entries {
@@ -1202,7 +1341,7 @@ fn expand_radius_entries(
     for &corner in &["top-left", "top-right", "bottom-right", "bottom-left"] {
         if let Some(raw) = spec.corner_value(corner) {
             let property = format!("border-{}-radius", corner);
-            let resolved = resolve_radius_value(&raw, &property, theme)?;
+            let resolved = resolve_radius_value(&raw, &property, theme, variables)?;
             declarations.push(Declaration {
                 property,
                 value: resolved,
@@ -1214,8 +1353,13 @@ fn expand_radius_entries(
     Ok(declarations)
 }
 
-fn resolve_radius_value(raw: &str, property: &str, theme: &Theme) -> Result<String, String> {
-    match resolve_value(raw, property, theme, Span::dummy()) {
+fn resolve_radius_value(
+    raw: &str,
+    property: &str,
+    theme: &Theme,
+    variables: &HashMap<String, String>,
+) -> Result<String, String> {
+    match resolve_value(raw, property, theme, Span::dummy(), variables) {
         Ok(value) => Ok(value),
         Err(original) => {
             let trimmed = raw.trim();
@@ -1714,5 +1858,32 @@ mod tests {
         let stylesheet = parser::parse(".demo { width: 0px@4; }").expect("parse rc");
         let err = resolve(stylesheet, &theme).expect_err("expected token error");
         assert!(err.contains("tokens must be separated"));
+    }
+
+    #[test]
+    fn variable_substitution_simple() {
+        let css = render_css("$spacing: @3;\n.demo { padding: $spacing; }");
+        assert!(css.contains("padding: 0.75rem;"));
+    }
+
+    #[test]
+    fn variable_substitution_calc() {
+        let css = render_css("$spacing: @4;\n.demo { width: calc(100% - $spacing); }");
+        assert!(css.contains("calc(100% - 1rem)"));
+    }
+
+    #[test]
+    fn variable_substitution_boundaries() {
+        let css = render_css("$sm: @4;\n$small: @3;\n.demo { padding: $small; }");
+        assert!(css.contains("padding: 0.75rem;"));
+    }
+
+    #[test]
+    fn unknown_variable_errors() {
+        let theme_dir = format!("{}/../../theme", env!("CARGO_MANIFEST_DIR"));
+        let theme = Theme::load_from_dir(&theme_dir).expect("load theme");
+        let stylesheet = parser::parse(".demo { border-width: $missing; }").expect("parse rc");
+        let err = resolve(stylesheet, &theme).expect_err("expected variable error");
+        assert!(err.contains("unknown variable '$missing'"));
     }
 }

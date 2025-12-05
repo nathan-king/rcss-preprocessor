@@ -1,4 +1,5 @@
 use crate::error::Span;
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct Rule {
@@ -20,4 +21,8 @@ pub struct MediaBlock {
     pub declarations: Vec<Declaration>,
 }
 
-pub type Stylesheet = Vec<Rule>;
+#[derive(Debug)]
+pub struct Stylesheet {
+    pub rules: Vec<Rule>,
+    pub variables: HashMap<String, String>,
+}

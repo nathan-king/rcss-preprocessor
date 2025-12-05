@@ -5,7 +5,7 @@ use std::sync::OnceLock;
 pub fn emit_css(stylesheet: &Stylesheet) -> String {
     let mut out = String::new();
 
-    for rule in stylesheet {
+    for rule in &stylesheet.rules {
         if !rule.declarations.is_empty() {
             emit_rule(rule, &mut out);
             out.push('\n');

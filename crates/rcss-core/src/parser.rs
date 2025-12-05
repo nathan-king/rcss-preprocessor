@@ -1,8 +1,6 @@
 use crate::ast::{Declaration, MediaBlock, Rule, Stylesheet};
 use crate::error::Span;
 use std::collections::HashMap;
-use std::iter::Peekable;
-use std::str::Chars;
 
 enum PresetScope {
     Root,
@@ -86,7 +84,7 @@ pub fn parse(input: &str) -> Result<Stylesheet, String> {
                 body.push_str(inner);
                 body.push('\n');
             }
-            let decls = parse_declarations(&body, &variables)?;
+            let decls = parse_declarations(&body)?;
             blocks.insert(name, decls);
             continue;
         }
@@ -137,8 +135,7 @@ pub fn parse(input: &str) -> Result<Stylesheet, String> {
         }
         let body = cleaned[body_start..body_end].to_string();
 
-        let (declarations, media, mut nested_rules) =
-            parse_rule_body(&body, &selector, &variables, &blocks)?;
+        let (declarations, media, mut nested_rules) = parse_rule_body(&body, &selector, &blocks)?;
 
         rules.push(Rule {
             selector,
@@ -166,24 +163,22 @@ pub fn parse(input: &str) -> Result<Stylesheet, String> {
         insert_at += 1;
     }
 
-    Ok(rules)
+    Ok(Stylesheet { rules, variables })
 }
 
 fn parse_rule_body(
     body: &str,
     selector: &str,
-    vars: &HashMap<String, String>,
     blocks: &HashMap<String, Vec<Declaration>>,
 ) -> Result<(Vec<Declaration>, Vec<MediaBlock>, Vec<Rule>), String> {
     let normalized_body = normalize_braces(body);
     let mut reader = LineReader::new(&normalized_body);
-    parse_rule_body_from_reader(selector, &mut reader, vars, blocks)
+    parse_rule_body_from_reader(selector, &mut reader, blocks)
 }
 
 fn parse_rule_body_from_reader<'a>(
     selector: &str,
     reader: &mut LineReader<'a>,
-    vars: &HashMap<String, String>,
     blocks: &HashMap<String, Vec<Declaration>>,
 ) -> Result<(Vec<Declaration>, Vec<MediaBlock>, Vec<Rule>), String> {
     let mut declarations = Vec::new();
@@ -234,7 +229,7 @@ fn parse_rule_body_from_reader<'a>(
                         let inner = inner.trim_end_matches(';');
                         if let Some((prop_part, value_part)) = inner.split_once(':') {
                             let property = prop_part.trim().to_string();
-                            let value = substitute_vars(value_part.trim(), vars);
+                            let value = value_part.trim().to_string();
                             inner_decls.push(Declaration {
                                 property,
                                 value,
@@ -253,7 +248,7 @@ fn parse_rule_body_from_reader<'a>(
                     let nested_selector = expand_nested_selector(selector, header);
                     let block_body = collect_block_body(reader)?;
                     let (inner_decls, inner_media, mut inner_nested) =
-                        parse_rule_body(&block_body, &nested_selector, vars, blocks)?;
+                        parse_rule_body(&block_body, &nested_selector, blocks)?;
                     nested_rules.push(Rule {
                         selector: nested_selector.clone(),
                         declarations: inner_decls,
@@ -261,7 +256,7 @@ fn parse_rule_body_from_reader<'a>(
                     });
                     nested_rules.append(&mut inner_nested);
                 } else {
-                    let block_decls = parse_property_block(header, reader, vars)?;
+                    let block_decls = parse_property_block(header, reader)?;
                     declarations.extend(block_decls);
                 }
                 continue;
@@ -281,7 +276,7 @@ fn parse_rule_body_from_reader<'a>(
                     column: value_col + 1,
                 };
 
-                let value = substitute_vars(value_trim, vars);
+                let value = value_trim.to_string();
                 if property_trim == "apply" && value.starts_with('$') {
                     let key = value.trim_start_matches('$').trim();
                     if let Some(block_decls) = blocks.get(key) {
@@ -312,7 +307,6 @@ fn is_media_header(header: &str) -> bool {
 fn parse_property_block<'a>(
     prefix: &str,
     reader: &mut LineReader<'a>,
-    vars: &HashMap<String, String>,
 ) -> Result<Vec<Declaration>, String> {
     let mut decls = Vec::new();
 
@@ -342,7 +336,7 @@ fn parse_property_block<'a>(
             if fragment.ends_with('{') {
                 let name = fragment.trim_end_matches('{').trim();
                 let nested_prefix = format!("{}.{}", prefix, name);
-                let nested = parse_property_block(&nested_prefix, reader, vars)?;
+                let nested = parse_property_block(&nested_prefix, reader)?;
                 decls.extend(nested);
                 continue;
             }
@@ -350,7 +344,7 @@ fn parse_property_block<'a>(
             let fragment = fragment.trim_end_matches(';');
             if let Some((prop_part, value_part)) = fragment.split_once(':') {
                 let property = format!("{}.{}", prefix, prop_part.trim());
-                let value = substitute_vars(value_part.trim(), vars);
+                let value = value_part.trim().to_string();
                 decls.push(Declaration {
                     property,
                     value,
@@ -455,62 +449,7 @@ impl<'a> LineReader<'a> {
     }
 }
 
-fn substitute_vars(value: &str, vars: &HashMap<String, String>) -> String {
-    let mut out = String::new();
-    let mut chars = value.chars().peekable();
-
-    while let Some(ch) = chars.next() {
-        if ch == '$' {
-            if let Some(name) = parse_variable_name(&mut chars) {
-                if let Some(replacement) = vars.get(&name) {
-                    out.push_str(replacement);
-                    continue;
-                } else {
-                    out.push('$');
-                    out.push_str(&name);
-                    continue;
-                }
-            }
-            out.push('$');
-            continue;
-        }
-        out.push(ch);
-    }
-    out
-}
-
-fn parse_variable_name(chars: &mut Peekable<Chars>) -> Option<String> {
-    let first = chars.peek().cloned()?;
-    if !is_variable_start(first) {
-        return None;
-    }
-
-    let mut name = String::new();
-    name.push(chars.next().unwrap());
-
-    while let Some(&next) = chars.peek() {
-        if is_variable_char(next) {
-            name.push(chars.next().unwrap());
-        } else {
-            break;
-        }
-    }
-
-    Some(name)
-}
-
-fn is_variable_start(ch: char) -> bool {
-    ch.is_ascii_alphabetic() || ch == '_'
-}
-
-fn is_variable_char(ch: char) -> bool {
-    ch.is_ascii_alphanumeric() || ch == '_' || ch == '-'
-}
-
-fn parse_declarations(
-    body: &str,
-    vars: &HashMap<String, String>,
-) -> Result<Vec<Declaration>, String> {
+fn parse_declarations(body: &str) -> Result<Vec<Declaration>, String> {
     let mut decls = Vec::new();
     for raw_line in body.lines() {
         let line = raw_line.trim();
@@ -520,7 +459,7 @@ fn parse_declarations(
         let line = line.trim_end_matches(';');
         if let Some((prop_part, value_part)) = line.split_once(':') {
             let property = prop_part.trim().to_string();
-            let value = substitute_vars(value_part.trim(), vars);
+            let value = value_part.trim().to_string();
             decls.push(Declaration {
                 property,
                 value,
