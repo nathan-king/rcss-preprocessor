@@ -1,32 +1,108 @@
 {
   "$schema": "vscode://schemas/color-theme",
-  "name": "RCSS Accent",
+  "name": "RCSS Accent (Catppuccin)",
   "type": "dark",
-  "colors": {},
   "tokenColors": [
+    /* -------------------------------------------------------
+       RCSS VARIABLES — custom syntax
+    ------------------------------------------------------- */
     {
-      "scope": "support.type.property-name.css.rcss",
-      "settings": { "fontStyle": "" }
+      "scope": "rcss.variable",
+      "settings": { "foreground": "#F9E2AF" }
     },
     {
-      "scope": "variable.other.readwrite.rcss",
-      "settings": { "foreground": "#e5c07b" }
+      "scope": "rcss.variable.sigil",
+      "settings": { "foreground": "#FAB387" }
+    },
+
+    /* -------------------------------------------------------
+       RCSS TOKENS — @blue-500, @lg, @md
+    ------------------------------------------------------- */
+    {
+      "scope": "rcss.token",
+      "settings": { "foreground": "#A6E3A1" }
     },
     {
-      "scope": "punctuation.definition.variable.rcss",
-      "settings": { "foreground": "#b3933a" }
+      "scope": "rcss.token.sigil",
+      "settings": { "foreground": "#94E2D5" }
+    },
+
+    /* -------------------------------------------------------
+       PRESETS — %base-16, %dark-reading
+    ------------------------------------------------------- */
+    {
+      "scope": "rcss.preset",
+      "settings": { "foreground": "#CBA6F7" }
+    },
+
+    /* -------------------------------------------------------
+       PROPERTIES — standard CSS scope
+    ------------------------------------------------------- */
+    {
+      "scope": "support.type.property-name.css",
+      "settings": { "foreground": "#74C7EC" }
+    },
+
+    /* -------------------------------------------------------
+       NUMBERS — standard CSS number scope
+    ------------------------------------------------------- */
+    {
+      "scope": "constant.numeric.css",
+      "settings": { "foreground": "#89DCEB" }
+    },
+
+    /* -------------------------------------------------------
+       STRINGS — CSS strings
+    ------------------------------------------------------- */
+    {
+      "scope": ["string.quoted.double.css", "string.quoted.single.css"],
+      "settings": { "foreground": "#CBA6F7" }
+    },
+
+    /* -------------------------------------------------------
+       FUNCTIONS — rotate(), width(), translate()
+       Keep standard CSS function scopes
+    ------------------------------------------------------- */
+    {
+      "scope": "support.function.misc.css",
+      "settings": { "foreground": "#B4BEFE" }
+    },
+
+    /* -------------------------------------------------------
+       SELECTORS — IDs, classes, tags
+       Use real CSS selector scopes
+    ------------------------------------------------------- */
+    {
+      "scope": "entity.other.attribute-name.class.css",
+      "settings": { "foreground": "#7F849C" }
     },
     {
-      "scope": "constant.other.rcss",
-      "settings": { "foreground": "#61afef" }
+      "scope": "entity.other.attribute-name.id.css",
+      "settings": { "foreground": "#6C7086" }
     },
     {
-      "scope": "punctuation.separator.constant.rcss",
-      "settings": { "foreground": "#8ec7ff" }
+      "scope": "entity.name.tag.css",
+      "settings": { "foreground": "#9399B2" }
+    },
+
+    /* -------------------------------------------------------
+       KEYWORDS — apply, screen, dark, light
+    ------------------------------------------------------- */
+    {
+      "scope": "keyword.control.at-rule.css",
+      "settings": { "foreground": "#F38BA8" }
+    },
+
+    /* -------------------------------------------------------
+       COMMENTS — standard CSS comments
+    ------------------------------------------------------- */
+    {
+      "scope": "comment.line.double-slash.css",
+      "settings": { "foreground": "#7F849C", "fontStyle": "italic" }
     },
     {
-      "scope": "punctuation.definition.constant.rcss",
-      "settings": { "foreground": "#3b697814" }
+      "scope": "comment.block.css",
+      "settings": { "foreground": "#6C7086", "fontStyle": "italic" }
     }
   ]
 }

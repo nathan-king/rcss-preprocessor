@@ -2,7 +2,7 @@
   "name": "rcss-syntax",
   "displayName": "RCSS Syntax",
   "description": "Lightweight TextMate grammar for RCSS (tokens, vars, presets, nested blocks).",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "publisher": "local",
   "main": "./extension.js",
   "engines": {
@@ -35,13 +35,6 @@
         "path": "./syntaxes/rcss.tmLanguage.json"
       }
     ],
-    "themes": [
-      {
-        "label": "RCSS Accent",
-        "uiTheme": "vs-dark",
-        "path": "./themes/rcss-color-theme.json"
-      }
-    ],
     "commands": [
       {
         "command": "rcss.buildFile",
@@ -59,12 +52,12 @@
         "rcss.buildCommand": {
           "type": "string",
           "default": "cargo run -p rcss-cli -- build ${file}",
-          "description": "Command to build the current RCSS file. ${file} is replaced with the absolute path to the saved file."
+          "description": "Command to build the current RCSS file."
         },
         "rcss.buildCwd": {
           "type": "string",
           "default": "",
-          "description": "Optional working directory for the build command. Defaults to the first workspace folder containing the file, or the file's directory."
+          "description": "Optional working directory for the RCSS build command."
         }
       }
     }
